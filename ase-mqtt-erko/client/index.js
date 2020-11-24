@@ -2,9 +2,10 @@ const mqtt = require('mqtt');
 const client  = mqtt.connect('mqtt://test.mosquitto.org');
  
 client.on('connect', () => {
-  client.subscribe('presence', err => {
+  client.subscribe('temp', err => {
     if (!err) {
-      client.publish('presence', 'Hello mqtt');
+      const temp = Math.floor(Math.random() * (21.5 - 19.5) + 19.5);
+      client.publish('temp', temp.toString());
     } else {
       console.error(err);
     }
