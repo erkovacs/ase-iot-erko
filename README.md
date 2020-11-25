@@ -32,4 +32,4 @@ For simplicity's sake we used the same script file as "both clients" but this is
 
 Take a look at the data captured in Wireshark, it's encrypted:
 
-![mqtt-encrypted](./media/mqtt-encrypted.png "MQTT Encrypted")
+![mqtt-encrypted](./media/mqtt-encrypted.PNG)
