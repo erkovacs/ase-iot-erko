@@ -17,7 +17,9 @@ server.on('request', function(req, res) {
   let decrypted = Util.decrypt(payload, KEY);
   const data = (() => { try { return JSON.parse(decrypted); } catch (e) { return null; }})();
   console.log('Temp=', data ? data.temp : '?');
-  res.end(JSON.stringify({ success: true }));
+  let response = JSON.stringify({ success: true, updated: { temp: data.temp } });
+  let encryptedResponse = Util.encrypt(response, KEY);
+  res.end(encryptedResponse);
 });
 
 // the default CoAP port is 5683

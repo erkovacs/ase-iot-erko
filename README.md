@@ -17,9 +17,10 @@ The connection uses application-level encryption based on AES-128 in CBC mode wi
 
 There are two files, one for the client and one for the server. They must be run in parallel so they can talk to each other.
 
-Take a look at the data captured in Wireshark, it's encrypted:
+Take a look at the data captured in Wireshark, it's encrypted (both the request and the response):
 
-![mqtt-encrypted](./media/coap-encrypted.PNG)
+![coap-encrypted](./media/coap-image-1.PNG)
+![coap-encrypted](./media/coap-image-2.PNG)
 
 ## For ASE-COAP-ERKO
 Dependencies
@@ -38,4 +39,4 @@ For simplicity's sake we used the same script file as "both clients" but this is
 
 Take a look at the data captured in Wireshark, it's encrypted:
 
-![mqtt-encrypted](./media/mqtt-encrypted-2.PNG)
+![mqtt-encrypted](./media/mqtt-image-2.PNG)
