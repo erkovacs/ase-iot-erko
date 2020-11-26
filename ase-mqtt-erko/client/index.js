@@ -1,22 +1,18 @@
 const mqtt = require('mqtt');
-const fs = require('fs');
+const Util = require('../common');
+
+const KEY = process.env.KEY && process.env.KEY.length >= 16 ? process.env.KEY : null;
+
+if (!KEY) {
+    console.log("Fatal: Key not specified or of insufficient length");
+    process.exit();
+}
 
 const BROKER = 'mqtt://test.mosquitto.org';
 
-// Specify config options in order to use SSL
 const options = {
-  // Port according to spec on mosquitto website
-  port: 8884,
-
-  // Necessary only if the server requires client certificate authentication
-  key: fs.readFileSync('./client-key.pem'),
-  cert: fs.readFileSync('./client-cert.pem'),
-
-  // Necessary only if the server uses a self-signed certificate
-  ca: [ fs.readFileSync('./mosquitto.org.crt') ],
-
-  // Necessary only if the server's cert isn't for "localhost"
-  checkServerIdentity: () => { return null; }
+  // Send traffic over unencrypted port
+  port: 1883,
 };
 
 const client = mqtt.connect(BROKER, options);
@@ -33,7 +29,8 @@ client.on('connect', () => {
     setInterval(() => {
       const temp = Math.floor(Math.random() * (21.5 - 19.5) + 19.5);
       const payload = JSON.stringify({ temp });
-      client.publish('erko-temp', payload);
+      const encrypted = Util.encrypt(payload, KEY);
+      client.publish('erko-temp', encrypted);
     }, 3000);
   });
 
@@ -41,8 +38,9 @@ client.on('connect', () => {
 });
  
 client.on('message', (topic, message) => {
-  // Parse and log the temperature
-  const payload = (() => { try { return JSON.parse(message.toString()); } catch (e) { return null; }})();
+  // Decrypt, parse and log the temperature
+  const decrypted = Util.decrypt(message.toString(), KEY);
+  const payload = (() => { try { return JSON.parse(decrypted); } catch (e) { return null; }})();
   console.log('Temp=', payload ? payload.temp : '?');
 });
 
