@@ -3,13 +3,16 @@
 ## For ASE-MQTT-ERKO
 Dependencies
  - Node v13.9.0
- - OpenSSL
 
  COAP Client and Server can be run using the following steps:
- - TODO::
+ - Clone this repo
+ - Enter the COAP Project `cd ase-coap-erko`
+ - Install dependecies `npm install`
+ - In a terminal provide a runtime key and run server `KEY=testpassword1234 npm run dev-server`
+ - In a second terminal provide a runtime key and run client `KEY=testpassword1234 npm run dev-client`
 
 ## How it works
-TODO::
+The connection uses application-level encryption based on AES-128 in CBC mode with a pre-shared key provided as an environment variable and a known (hardcoded) IV. 
 
 ## For ASE-COAP-ERKO
 Dependencies
