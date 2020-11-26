@@ -1,7 +1,7 @@
 const coap = require('coap');
 const Util = require('../common');
 
-const KEY = process.argv[2] && process.argv[2].length >= 16 ? process.argv[2] : null;
+const KEY = process.env.KEY && process.env.KEY.length >= 16 ? process.env.KEY : null;
 
 if (!KEY) {
     console.log("Fatal: Key not specified or of insufficient length");
