@@ -19,7 +19,7 @@ The connection uses application-level encryption based on AES-128 in CBC mode wi
 
 There are two scripts, one for the client and one for the server. They must be run in parallel so they can talk to each other over localhost:
 
-![coap-encrypted](./media/client-server.PNG)
+![coap-encrypted](./media/client-server-1.PNG)
 
 Take a look at the data captured in Wireshark, it's encrypted (both the request and the response):
 
