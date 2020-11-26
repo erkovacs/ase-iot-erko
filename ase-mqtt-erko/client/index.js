@@ -1,5 +1,5 @@
 const mqtt = require('mqtt');
-const Util = require('../common');
+const Util = require('../../common');
 
 const KEY = process.env.KEY && process.env.KEY.length >= 16 ? process.env.KEY : null;
 
@@ -25,9 +25,9 @@ client.on('connect', () => {
       return;
     }
 
-    // Ping the server with this every 3 seconds
+    // Ping the server with some dummy data every 3 seconds
     setInterval(() => {
-      const temp = Math.floor(Math.random() * (21.5 - 19.5) + 19.5);
+      const temp = (Math.random() * (21.5 - 19.5) + 19.5).toFixed(3);
       const payload = JSON.stringify({ temp });
       const encrypted = Util.encrypt(payload, KEY);
       client.publish('erko-temp', encrypted);
