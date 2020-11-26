@@ -1,0 +1,25 @@
+{
+  "name": "ase-iot-erko",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev-mqtt-client": "nodemon ./ase-mqtt-erko/client",
+    "mqtt-client": "node ./ase-mqtt-erko/client",
+    "dev-coap-server": "nodemon ./ase-coap-erko/server",
+    "dev-coap-client": "nodemon ./ase-coap-erko/client",
+    "coap-server": "node ./ase-coap-erko/server",
+    "coap-client": "node ./ase-coap-erko/client"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "nodemon": "^2.0.6"
+  },
+  "dependencies": {
+    "mqtt": "^4.2.5",
+    "coap": "^0.24.0"
+  }
+}

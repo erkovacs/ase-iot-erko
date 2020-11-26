@@ -1,6 +1,5 @@
 const coap = require('coap');
-const { decrypt } = require('../../ase-mqtt-erko/common');
-const Util = require('../common');
+const Util = require('../../common');
 
 const KEY = process.env.KEY && process.env.KEY.length >= 16 ? process.env.KEY : null;
 
@@ -14,19 +13,22 @@ let req;
 setInterval(() => {
 
     // Send some dummy data
-    const temp = Math.floor(Math.random() * (21.5 - 19.5) + 19.5);
     req = coap.request({ 
         observe: false,
         host: 'localhost',
         pathname: '/api/temp', 
         method: 'post' 
     });
+    
+    const temp = (Math.random() * (21.5 - 19.5) + 19.5).toFixed(3);
 
+    // Serialize and encrypt data
     const payload = JSON.stringify({ temp });
     const ciphertext = Util.encrypt(payload, KEY, KEY);
     req.write(ciphertext);
 
     req.on('response', function(res) {
+        // Decrypt response
         const payload = Util.decrypt(res.payload.toString('utf-8'), KEY);
         const data = JSON.parse(payload);
         if (data.success) {

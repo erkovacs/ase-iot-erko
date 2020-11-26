@@ -15,7 +15,9 @@ Dependencies
 ## How it works
 The connection uses application-level encryption based on AES-128 in CBC mode with a pre-shared key provided as an environment variable and a known (hardcoded) IV. 
 
-There are two files, one for the client and one for the server. They must be run in parallel so they can talk to each other.
+There are two files, one for the client and one for the server. They must be run in parallel so they can talk to each other over localhost:
+
+![coap-encrypted](./media/client-server.PNG)
 
 Take a look at the data captured in Wireshark, it's encrypted (both the request and the response):
 
