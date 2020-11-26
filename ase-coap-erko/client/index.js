@@ -33,6 +33,8 @@ setInterval(() => {
         const data = JSON.parse(payload);
         if (data.success) {
             console.log('Successfully pinged server, response = ', data);
+        } else {
+            console.log('Error occurred = ', data);
         }
         res.on('end', function() {
             // on request end

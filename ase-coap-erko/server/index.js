@@ -12,14 +12,22 @@ if (!KEY) {
 const server = coap.createServer({ type: 'udp4' });
 
 server.on('request', function(req, res) {
+  let success = true;
+
   // Decrypt and parse what we got
   let payload = req.payload.toString('utf-8');
-  let decrypted = Util.decrypt(payload, KEY);
-  const data = (() => { try { return JSON.parse(decrypted); } catch (e) { return null; }})();
-  console.log('Temp=', data ? data.temp : '?');
+  let decrypted, data;
+  try {
+    decrypted = Util.decrypt(payload, KEY);
+    data = JSON.parse(decrypted)
+  } catch (error) {
+    success = false;
+    data = error;
+  }
+  console.log('Temp=', data && data.temp ? data.temp : '?');
 
   // Respond with encrypted data
-  let response = JSON.stringify({ success: true, updated: { temp: data.temp } });
+  let response = JSON.stringify({ success, data });
   let encryptedResponse = Util.encrypt(response, KEY);
   res.end(encryptedResponse);
 });
