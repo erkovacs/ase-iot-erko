@@ -1,4 +1,13 @@
 const coap = require('coap');
+const { decrypt } = require('../../ase-mqtt-erko/common');
+const Util = require('../common');
+
+const KEY = process.env.KEY && process.env.KEY.length >= 16 ? process.env.KEY : null;
+
+if (!KEY) {
+    console.log("Fatal: Key not specified or of insufficient length");
+    process.exit();
+}
 
 let req;
 
@@ -13,9 +22,16 @@ setInterval(() => {
         method: 'post' 
     });
 
-    req.write(JSON.stringify({ temp }));
+    const payload = JSON.stringify({ temp });
+    const ciphertext = Util.encrypt(payload, KEY, KEY);
+    req.write(ciphertext);
 
     req.on('response', function(res) {
+        const payload = Util.decrypt(res.payload.toString('utf-8'), KEY);
+        const data = JSON.parse(payload);
+        if (data.success) {
+            console.log('Successfully pinged server, response = ', data);
+        }
         res.on('end', function() {
             // on request end
         })
