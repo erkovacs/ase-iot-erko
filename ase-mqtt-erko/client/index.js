@@ -29,7 +29,7 @@ client.on('connect', () => {
     setInterval(() => {
       const temp = (Math.random() * (21.5 - 19.5) + 19.5).toFixed(3);
       const payload = JSON.stringify({ temp });
-      const encrypted = Util.encrypt(payload, KEY);
+      const encrypted = Util.encryptAES(payload, KEY);
       client.publish('erko-temp', encrypted);
     }, 3000);
   });
@@ -39,7 +39,7 @@ client.on('connect', () => {
  
 client.on('message', (topic, message) => {
   // Decrypt, parse and log the temperature
-  const decrypted = Util.decrypt(message.toString(), KEY);
+  const decrypted = Util.decryptAES(message.toString(), KEY);
   const payload = (() => { try { return JSON.parse(decrypted); } catch (e) { return null; }})();
   console.log('Temp=', payload ? payload.temp : '?');
 });
