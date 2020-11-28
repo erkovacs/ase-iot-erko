@@ -22,10 +22,18 @@ There are two scripts, one for the client and one for the server. They must be r
 
 ![client-server](./media/client-server.PNG)
 
-Take a look at the data captured in Wireshark, it's encrypted (both the request and the response):
+Take a look at the key exchange cycle (plaintext) in Wireshark:
 
-![coap-encrypted](./media/coap-image-rsa-1.PNG)
+![coap-key-exchange](./media/coap-image-rsa-1.PNG)
+
+Subsequently all payloads are encrypted:
 ![coap-encrypted](./media/coap-image-rsa-2.PNG)
+
+Strictly speaking, this is more of a demonstration/toy project, and it would make much more sense to optimize this scheme after the following logic:
+- Exchange keys as shown here
+- Authenticate the parties to each other using signatures, as shown here
+- Do not encrypt all traffic using RSA. Rather, exchange only one message, an agreed-upon session-specific symmetric key over the secure channel
+- Continue the encrypted chat using a faster symmetric key encryption such as AES using the key shared over the secure channel 
 
 ## For ASE-MQTT-ERKO
 MQTT client can be run using the following steps:
