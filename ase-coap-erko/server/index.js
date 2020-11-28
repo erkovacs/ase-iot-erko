@@ -1,35 +1,54 @@
 const coap = require('coap');
 const Util = require('../../common');
 
-// Read key
-const KEY = process.env.KEY && process.env.KEY.length >= 16 ? process.env.KEY : null;
-
-if (!KEY) {
-    console.log("Fatal: Key not specified or of insufficient length");
-    process.exit();
-}
+// Create own keys
+const { publicKey, privateKey } = Util.generateKeys();
+let clientPublicKey;
 
 const server = coap.createServer({ type: 'udp4' });
 
 server.on('request', function(req, res) {
-  let success = true;
+  // We exchnage keys
+  if ('/api/set-pub' === req.url) {
+    clientPublicKey = req.payload.toString('utf-8');
+    res.end(publicKey);
+  } 
+  // We get requests
+  else {
+    let success = true;
 
-  // Decrypt and parse what we got
-  let payload = req.payload.toString('utf-8');
-  let decrypted, data;
-  try {
-    decrypted = Util.decrypt(payload, KEY);
-    data = JSON.parse(decrypted)
-  } catch (error) {
-    success = false;
-    data = error;
+    // Slice the signature from the payload
+    let payload = req.payload;
+    let decrypted, data;
+    
+    try {
+      // We know signature is in hex and its string length is 512 (2*256)
+      const signature = payload.subarray(0, 512).toString('utf-8');
+      
+      // The rest is payload
+      const encrypted = payload.subarray(512, payload.length).toString('hex');
+      decrypted = Util.decrypt(encrypted, privateKey).toString('utf-8');
+
+      // Verify or log error
+      if (Util.verify(clientPublicKey, signature, decrypted)) {
+        data = JSON.parse(decrypted)
+      } else {
+        success = false;
+        data = { error: 'Invalid signature, either data was tampered with or another client private key was used!' };
+      }
+    } catch (error) {
+      success = false;
+      data = error;
+    }
+    console.log('Temp=', data && data.temp ? data.temp : '?');
+  
+    // Respond with encrypted data
+    let response = JSON.stringify({ success, data });
+    let signature = Util.sign(privateKey, response);
+    let encryptedResponse = Util.encrypt(response, clientPublicKey);
+    let packet = Buffer.concat([Buffer.from(signature), encryptedResponse]);
+    res.end(packet);
   }
-  console.log('Temp=', data && data.temp ? data.temp : '?');
-
-  // Respond with encrypted data
-  let response = JSON.stringify({ success, data });
-  let encryptedResponse = Util.encrypt(response, KEY);
-  res.end(encryptedResponse);
 });
 
 // the default CoAP port is 5683

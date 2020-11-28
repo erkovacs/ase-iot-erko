@@ -1,48 +1,68 @@
 const coap = require('coap');
 const Util = require('../../common');
 
-const KEY = process.env.KEY && process.env.KEY.length >= 16 ? process.env.KEY : null;
+// Create own keys
+const { publicKey, privateKey } = Util.generateKeys();
+let req, serverPublicKey;
 
-if (!KEY) {
-    console.log("Fatal: Key not specified or of insufficient length");
-    process.exit();
-}
+// Send own pub and await server's pub
+req = coap.request({ 
+    observe: false,
+    host: 'localhost',
+    pathname: '/api/set-pub', 
+    method: 'post' 
+});
+req.write(publicKey);
+req.end();
+req.on('response', function(res) {
+    // We get server's pub
+    serverPublicKey = res.payload.toString('utf-8');
 
-let req;
+    // We have exchanged keys and can start sending messages
+    setInterval(() => {
 
-setInterval(() => {
-
-    // Send some dummy data
-    req = coap.request({ 
-        observe: false,
-        host: 'localhost',
-        pathname: '/api/temp', 
-        method: 'post' 
-    });
+        // Send some dummy temperature data
+        req = coap.request({ 
+            observe: false,
+            host: 'localhost',
+            pathname: '/api/temp', 
+            method: 'post' 
+        });
+        
+        const temp = (Math.random() * (21.5 - 19.5) + 19.5).toFixed(3);
     
-    const temp = (Math.random() * (21.5 - 19.5) + 19.5).toFixed(3);
+        // Serialize, sign and encrypt data
+        const payload = JSON.stringify({ temp });
+        const signature = Util.sign(privateKey, payload);
+        const ciphertext = Util.encrypt(payload, serverPublicKey);
+        const packet = Buffer.concat([Buffer.from(signature), ciphertext]);
 
-    // Serialize and encrypt data
-    const payload = JSON.stringify({ temp });
-    const ciphertext = Util.encrypt(payload, KEY, KEY);
-    req.write(ciphertext);
+        req.write(packet);
+        
+        // Wait for a response
+        req.on('response', function(res) {
+            // Slice response into signature and data
+            const resSignature = res.payload.subarray(0, 512).toString('utf-8');
+            const encrypted = res.payload.subarray(512, res.payload.length).toString('hex');
 
-    req.on('response', function(res) {
-        // Decrypt response
-        const payload = Util.decrypt(res.payload.toString('utf-8'), KEY);
-        const data = JSON.parse(payload);
-        if (data.success) {
-            console.log('Successfully pinged server, response = ', data);
-        } else {
-            console.log('Error occurred = ', data);
-        }
-        res.on('end', function() {
-            // on request end
-        })
-    });
-
-    req.end();
-}, 3000);
+            // Decrypt
+            const plain = Util.decrypt(encrypted, privateKey);
+            const data = JSON.parse(plain);
+            
+            // Verify
+            if (!Util.verify(serverPublicKey, resSignature, plain)) {
+                console.log('Invalid signature, either data was tampered with or another client private key was used!');
+            }
+            // Log data to console
+            else if (data.success) {
+                console.log('Successfully pinged server, response = ', data);
+            } else {
+                console.log('Error occurred = ', data);
+            }
+        });
+        req.end();
+    }, 3000);
+});
 
 // Exit gracefully on ctrl-c
 process.on('SIGINT', (code) => {

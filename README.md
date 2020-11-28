@@ -10,12 +10,13 @@
 ## For ASE-COAP-ERKO
 
  COAP Client and Server can be run using the following steps:
- - In a terminal provide a runtime key and run server `KEY=testpassword1234 npm run coap-server`
- - In a second terminal provide **the same** runtime key and run client `KEY=testpassword1234 npm run coap-client`
+ - In a terminal run server `npm run coap-server`
+ - In a second terminal run client `npm run coap-client`
  - Use `Ctrl+C` to kill either process (the business logic is very simple - a random "room temperature" is pushed to the server every 3000ms until the client is killed - the server responds with a status flag and some metadata)
 
 ## How it works
-The connection uses application-level encryption based on AES-128 in CBC mode with a pre-shared key provided as an environment variable and a known (hardcoded) IV. 
+The connection uses application-level encryption based on RSA with N=2048. The Client and the Server each generate a key pair at runtime and exchange their public keys over a public (unsecure) channel, after which they will communicate over a secure channel using RSA Signatures and Encryption.
+The messages transmitted consists of two concatenated byte arrays - the signature, of known length, followed by the payload (simple JSON string) ex. `[signature][encrypted payload]`
 
 There are two scripts, one for the client and one for the server. They must be run in parallel so they can talk to each other over localhost:
 
@@ -23,8 +24,8 @@ There are two scripts, one for the client and one for the server. They must be r
 
 Take a look at the data captured in Wireshark, it's encrypted (both the request and the response):
 
-![coap-encrypted](./media/coap-image-1.PNG)
-![coap-encrypted](./media/coap-image-2.PNG)
+![coap-encrypted](./media/coap-image-rsa-1.PNG)
+![coap-encrypted](./media/coap-image-rsa-2.PNG)
 
 ## For ASE-MQTT-ERKO
 MQTT client can be run using the following steps:
