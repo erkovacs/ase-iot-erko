@@ -1,5 +1,8 @@
 const crypto = require('crypto');
 
+const IV = Buffer.from([0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 
+    0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01]);
+
 class Util {
 
     static hash (string) {
@@ -10,7 +13,23 @@ class Util {
         return hash;
     }
 
-    static encrypt (text, key) {
+    static encryptAES (text, key) {
+        let cipher = crypto.createCipheriv( 
+            'aes-128-cbc', Buffer.from(key, 'utf-8'), IV); 
+        let crypted = cipher.update(text, 'utf8', 'hex');
+        crypted += cipher.final('hex');
+        return crypted;
+    }
+
+    static decryptAES (text, key) {
+        const cipher = crypto.createDecipheriv(
+            'aes-128-cbc', Buffer.from(key, 'utf-8'), IV);
+        let decrypted = cipher.update(text, 'hex', 'utf-8');
+        decrypted += cipher.final('utf-8');
+        return decrypted;
+    }
+
+    static encryptRSA (text, key) {
         const encryptedData = crypto.publicEncrypt({
             key: key,
             padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
@@ -19,7 +38,7 @@ class Util {
         return encryptedData;
     }
 
-    static decrypt (data, key) {
+    static decryptRSA (data, key) {
         const encryptedData = crypto.privateDecrypt({
             key: key,
             padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,

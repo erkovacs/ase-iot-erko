@@ -34,7 +34,7 @@ req.on('response', function(res) {
         // Serialize, sign and encrypt data
         const payload = JSON.stringify({ temp });
         const signature = Util.sign(privateKey, payload);
-        const ciphertext = Util.encrypt(payload, serverPublicKey);
+        const ciphertext = Util.encryptRSA(payload, serverPublicKey);
         const packet = Buffer.concat([Buffer.from(signature), ciphertext]);
 
         req.write(packet);
@@ -46,7 +46,7 @@ req.on('response', function(res) {
             const encrypted = res.payload.subarray(512, res.payload.length).toString('hex');
 
             // Decrypt
-            const plain = Util.decrypt(encrypted, privateKey);
+            const plain = Util.decryptRSA(encrypted, privateKey);
             const data = JSON.parse(plain);
             
             // Verify

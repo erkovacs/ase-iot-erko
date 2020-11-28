@@ -27,7 +27,7 @@ server.on('request', function(req, res) {
       
       // The rest is payload
       const encrypted = payload.subarray(512, payload.length).toString('hex');
-      decrypted = Util.decrypt(encrypted, privateKey).toString('utf-8');
+      decrypted = Util.decryptRSA(encrypted, privateKey).toString('utf-8');
 
       // Verify or log error
       if (Util.verify(clientPublicKey, signature, decrypted)) {
@@ -45,7 +45,7 @@ server.on('request', function(req, res) {
     // Respond with encrypted data
     let response = JSON.stringify({ success, data });
     let signature = Util.sign(privateKey, response);
-    let encryptedResponse = Util.encrypt(response, clientPublicKey);
+    let encryptedResponse = Util.encryptRSA(response, clientPublicKey);
     let packet = Buffer.concat([Buffer.from(signature), encryptedResponse]);
     res.end(packet);
   }
