@@ -1,7 +1,6 @@
 const WebSocket = require('ws');
 const fs = require('fs');
 
-
 async function main () {
 
     const url = process.argv[2];
@@ -13,14 +12,21 @@ async function main () {
     }
 
     let client = new WebSocket(url);
-    
-    const file = fs.readFileSync(path, 'utf-8');
 
-    client.on('message', msg => console.log(`Update: ${msg}`));
+    client.on('message', message => {
+        // TODO:: Overwrite file if update
+        // TODO:: Do nothing otherwise
+        console.log(`Update: ${msg}`);
+    });
     
     await new Promise(resolve => client.once('open', resolve));
     
-    client.send(file);
+    // Sync on save
+    fs.watchFile(path, (curr, prev) => {
+        fs.readFile(path, 'utf-8', (err, data) => {
+            client.send(data);
+        });
+    });
 }
 
 main();
