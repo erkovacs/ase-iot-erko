@@ -1,4 +1,9 @@
 const WebSocket = require('ws');
+
+let xml = `<test>
+<somestuff/>
+</test>`;
+
 const server = new WebSocket.Server({
   port: 8080
 });
@@ -10,6 +15,9 @@ server.on('connection', function(socket) {
   // When you receive a message, send that message to every socket.
   socket.on('message', function(msg) {
     console.log(msg);
+    xmlcompare(xml, msg, function(result) {
+      console.log(result);
+    });
     sockets.forEach(s => s.send(msg));
   });
 
